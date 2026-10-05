@@ -1,0 +1,82 @@
+import { it, expect, vi } from 'vitest';
+import * as THREE from 'three';
+import { Game } from '../src/game/Game.js';
+import { Entity } from '../src/game/gameplay/Entity.js';
+import { World } from '../src/game/world/World.js';
+import { BLOCK } from '../src/game/world/Blocks.js';
+import { DEMO } from '../src/content/demo.js';
+import { freshSave } from '../src/game/core/SaveSystem.js';
+function runtime() {
+  const g = Object.create(Game.prototype);
+  g.world = new World(...DEMO.size);
+  g.time = 1;
+  g.progress = freshSave();
+  g.scene = new THREE.Scene();
+  g.player = new Entity(g, { pos: new THREE.Vector3(...DEMO.spawn) });
+  g.enemy = { alive: true };
+  g.audio = { sfx: vi.fn() };
+  g.particles = { blockDust: vi.fn() };
+  g.camera = { snapBehind: vi.fn() };
+  g.renderer = { camera: new THREE.PerspectiveCamera() };
+  g.running = false;
+  g.saves = { write: vi.fn(() => true) };
+  g.onSave = vi.fn();
+  g.onComplete = vi.fn();
+  return g;
+}
+it('heals and persists a checkpoint, then respawns there after falling', () => {
+  const g = runtime();
+  g.player.pos.set(...DEMO.checkpoint);
+  g.player.hp = 3;
+  g.interact();
+  expect(g.player.hp).toBe(20);
+  expect(g.saves.write).toHaveBeenCalledWith(
+    expect.objectContaining({ checkpoint: DEMO.checkpoint }),
+  );
+  g.player.pos.set(80, -25, 80);
+  g.player.vel.set(1, -20, 2);
+  g.respawn();
+  expect(g.player.pos.toArray()).toEqual(DEMO.checkpoint);
+  expect(g.player.vel.length()).toBe(0);
+  expect(g.player.invuln).toBe(2);
+});
+it('requires both collected crystals and a defeated guardian to finish', () => {
+  const g = runtime();
+  g.player.pos.set(...DEMO.exit);
+  g.interact();
+  expect(g.onComplete).not.toHaveBeenCalled();
+  g.progress.collected = [0, 1, 2];
+  g.interact();
+  expect(g.onComplete).not.toHaveBeenCalled();
+  g.enemy.alive = false;
+  g.interact();
+  expect(g.progress.completed).toBe(true);
+  expect(g.onComplete).toHaveBeenCalledOnce();
+  expect(g.saves.write).toHaveBeenCalled();
+});
+it('mines and places real cells, persists edits and refuses protected cells', () => {
+  const g = runtime();
+  g.player.pos.set(65.5, 13, 62);
+  const c = g.renderer.camera;
+  c.position.set(65.5, 14.2, 67.5);
+  c.lookAt(65.5, 13, 64.5);
+  c.updateMatrixWorld();
+  g.world.setRaw(65, 13, 64, BLOCK.stone);
+  g.editBlock(true);
+  expect(g.progress.edits).toHaveLength(1);
+  const placed = g.progress.edits[0];
+  expect(placed[3]).toBe(BLOCK.oak_planks);
+  expect(g.world.get(...placed.slice(0, 3))).toBe(BLOCK.oak_planks);
+  g.editBlock(false);
+  expect(g.world.get(...placed.slice(0, 3))).toBe(BLOCK.air);
+  expect(g.progress.edits[0][3]).toBe(BLOCK.air);
+  g.player.pos.set(...DEMO.checkpoint);
+  c.position.set(40.5, 15, 40.5);
+  c.lookAt(40.5, 12, 38.5);
+  c.updateMatrixWorld();
+  g.world.setRaw(40, 12, 38, BLOCK.stone_bricks);
+  const count = g.progress.edits.length;
+  g.editBlock(false);
+  expect(g.world.get(40, 12, 38)).toBe(BLOCK.stone_bricks);
+  expect(g.progress.edits.length).toBe(count);
+});

@@ -1,0 +1,164 @@
+# {{ project.name }} — agent guide
+
+Rules and workflows for AI coding agents working in this repository. Humans start with `README.md`.
+{%- if options.spec_md %}
+
+**Read `SPEC.md` first.** It defines what this game must become. If it is incomplete, complete it with the owner before building features, and keep it current as decisions are made.
+{%- endif %}
+
+## Stack
+
+- **Language:** plain JavaScript ES modules (no TypeScript). Node.js ≥ 24 runs the tooling and the production server.
+- **Rendering:** Three.js on WebGL2 — chunked voxel meshes with baked corner light and ambient occlusion, skinned box characters, sky, water, shadows and post-processing (bloom, FXAA, colour grading).
+- **HUD:** PixiJS 8 on a second canvas, rendered by the game loop (`autoStart: false`).
+- **Menus:** Vue 3 (`<script setup>`) in `src/App.vue`: main menu, pause, settings, completion, error and the new-game dialog.
+- **Audio:** Web Audio, synthesized at runtime. Textures and character skins are painted procedurally on canvases; there are no image or sound files.
+- **Tooling:** Vite 8 (dev server and build), Vitest 5 (Node environment), ESLint 10 flat config with `eslint-plugin-vue`, Prettier 3.
+- **Production:** `vite build` writes a static `dist/`; `scripts/serve.mjs` (Node built-ins only) serves it.
+
+## Project map
+
+```text
+.env / .env.example          APP_NAME, APP_SLUG, WEB_PORT — the single source of truth; .env is git-ignored
+index.html                   Page shell; %APP_NAME% is replaced at build time
+vite.config.js               Reads .env through scripts/env.mjs, defines __APP_NAME__/__APP_SLUG__, dev port, chunks
+scripts/env.mjs              projectEnv(): reads .env literally (quotes, Cyrillic, $ kept); port() validation
+scripts/serve.mjs            Production static server for dist/ (GET/HEAD, SPA fallback, traversal guard)
+src/main.js                  Bootstrap: fonts, document title, mounts App.vue
+src/App.vue, src/style.css   Menus and screens; owns the Game instance and its canvases
+src/content/demo.js          The demo level: DEMO (id, seed, size, spawn, checkpoint, exit, enemy, crystals) and createDemo()
+src/game/Game.js             Game lifecycle, the only requestAnimationFrame loop, objectives, interactions, block edits, saving
+src/game/core/               Input (keyboard, mouse, pointer lock, gamepad), SaveSystem, Settings, Noise, Rng, math
+src/game/world/              Blocks (registry + texture keys), TexturePainter/Atlas (procedural atlas), Gen (terrain tools),
+                             World (cells, light, raycasts), Mesher/GreedyFaces (section meshes), VoxelRenderer (scene meshes)
+src/game/actors/             Rig (skinned box rig), SkinPainter (pixel skins), Animator (clips, locomotion), CharacterModel
+src/game/gameplay/           Entity (voxel physics, health), Player, Enemy, CameraRig (third-person camera), rules.js (pure rules)
+src/game/render/             Renderer (scene, passes, quality), Environment (lighting presets), Sky, Particles, output/grade passes
+src/game/hud/                Hud (Pixi drawing) and HudState (redraw only when visible values change)
+src/game/audio/              AudioEngine (effects and a short generated music phrase)
+tests/                       Vitest: world, gameplay, saves, rendering work, production server and .env parsing
+public/favicon.svg           Favicon
+```
+
+## Architecture rules
+
+```text
+App.vue (screens, settings) → Game (loop, rules, saving) → world / actors / gameplay / render / hud / audio
+                                     ↑ content (src/content/demo.js)
+```
+
+- **`App.vue`** owns UI state and the `Game` instance: it creates a `Game` with fresh canvases (`canvasVersion` key), calls `init`, `resume`, `pause`, `applySettings` and `dispose`, and reacts to the callbacks `onPause`, `onComplete`, `onError`, `onSave`. It never reaches into engine modules.
+- **`Game.js`** is the composition root and runs the only `requestAnimationFrame` loop: input → player/enemy → camera → renderer → HUD. Pixi must stay on `autoStart: false`; never add a second loop or timer-driven rendering.
+- **Engine modules** (`src/game/**`) are independent of Vue and of the demo where possible; they must not import `App.vue` or touch the DOM outside their canvas. Content (level layout, positions, seeds) lives in `src/content/`.
+- **Rules** that can be tested without WebGL go into pure functions (`gameplay/rules.js`, `SaveSystem.normalizeSave`, `Settings.normalizeSettings`).
+- **Lifecycle:** everything a module creates — GPU geometry, materials, textures, render targets, listeners, audio nodes, timers — is released in its `dispose()`, and `Game.dispose()` calls them. A disposed WebGL canvas is never reused: App.vue replaces both canvases before creating a new `Game`.
+- **Pausing:** losing focus, pointer lock or page visibility pauses the simulation and saves.
+- **Errors:** failures during `init` or a frame are reported through `onError` and shown on the error screen; storage failures set the visible save warning. Never swallow an error silently unless the feature is optional (audio).
+- **Saves** are browser-local (`localStorage`, keys `voxel.<APP_SLUG>.save.v1` and `voxel.<APP_SLUG>.settings.v1`), always written through `normalizeSave`/`normalizeSettings`. A save stores the level id, checkpoint, objectives and up to 2048 edited cells as numeric block ids.
+
+## Commands
+{% if choices.docker == "full" %}
+**Everything runs in Docker.** Node.js is not needed on the host and `npm` must not be run there: `node_modules` lives in a Docker volume with Linux builds. Run every command below inside the dev container:
+
+- `npm run dev` → `docker compose up dev` (Vite on {{ ports.WEB_PORT }}, published to the host);
+- any other `npm …` → `docker compose run --rm dev npm …` (e.g. `docker compose run --rm dev npm run check`);
+- `npm start` → `docker compose up --build app` (the production image).
+{% endif %}
+The dev server and `npm start` listen on `WEB_PORT` ({{ ports.WEB_PORT }}): http://localhost:{{ ports.WEB_PORT }}.
+
+| Command                           | Use                                                                              |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| `npm run dev`                     | Vite dev server with hot reload on `WEB_PORT`                                    |
+| `npm run build`                   | Production build into `dist/`                                                    |
+| `npm start`                       | Serve `dist/` on `WEB_PORT` with `scripts/serve.mjs` (run `npm run build` first) |
+| `npm test`                        | All Vitest tests; one file: `npx vitest run tests/world.test.js`                 |
+| `npm run check`                   | **Quality gate:** ESLint (zero warnings) + Prettier check + tests                |
+| `npm run lint` / `npm run format` | Lint only / format all files                                                     |
+
+## Configuration and environment
+
+- One `.env` in the project root; `.env.example` lists every key with a comment and is committed. Never commit `.env`.
+- The game title comes **only** from `APP_NAME`, and the save namespace from `APP_SLUG`. Code uses the build-time constants `__APP_NAME__` and `__APP_SLUG__` (defined in `vite.config.js`, declared as globals in `eslint.config.js`); `index.html` uses `%APP_NAME%`. Never hardcode the title or another project's storage keys.
+- `.env` is read by `projectEnv()` in `scripts/env.mjs`, which keeps values literal (Vite's `loadEnv` would expand `$`). Never parse `.env` by hand elsewhere.
+- To add a setting: add the key with a comment to `.env.example` and `.env`, read it in `vite.config.js` (build-time constant) or `scripts/serve.mjs` (production server), declare new globals in `eslint.config.js`, and document it in `README.md`. Everything defined for the browser is public: never put secrets there.
+- Restart `npm run dev` after changing `.env`; rebuild for production.
+
+## How to
+
+### Change the demo level
+
+Edit `src/content/demo.js`: `createDemo()` builds the world with `Gen` (heightmap, columns, flatten, forest, fill, set, protect, boundary). Positions in `DEMO` drive spawn, checkpoint, exit, enemy and crystals; `gameplay/rules.js` protects cells around them. **Change `DEMO.id`** (e.g. `meadow-v2`) whenever the generated terrain changes, because saves store edits as cell coordinates of that level and are ignored when the id differs. Update `tests/world.test.js` (deterministic spawn, bridge and crystal route).
+
+### Add a block
+
+1. Add a texture painter to `TEXTURES` in `src/game/world/Blocks.js` (helpers in `TexturePainter.js`), or reuse an existing key.
+2. **Append** a `def('name', { … })` (shape, bucket, solid, light, sound, …) after the last block: saves store numeric ids, so never insert, reorder or remove blocks. At most 255 blocks.
+3. Use it in content (`g.set`, `g.fill`) or make it placeable in `Game.editBlock()`.
+4. Add a test in `tests/world.test.js` when it has new collision, light or meshing behaviour.
+
+### Add a gameplay feature (objective, enemy, item)
+
+1. Content (positions, counts) → `src/content/demo.js`.
+2. Pure rules (reach, eligibility, protection) → `src/game/gameplay/rules.js` with tests in `tests/gameplay.test.js` or `tests/world.test.js`.
+3. Runtime objects → a class in `src/game/gameplay/` (extend `Entity` for physics actors) created and disposed by `Game.js`, updated in `Game.frame()`.
+4. Persistent state → add the field to `normalizeSave` (validate it, keep old saves loadable or bump `SAVE_VERSION`) with tests in `tests/save.test.js`.
+5. Visible state → HUD (`Hud.js`) **and** `HudState.js`, or a screen in `App.vue`.
+
+### Add a menu screen or setting
+
+Screens are `screen` values in `App.vue` with a `<section>`; settings are fields of `DEFAULT_SETTINGS` and `normalizeSettings` in `src/game/core/Settings.js`, applied in `Game.applySettings()`. Add a test for the clamping in `tests/save.test.js`.
+
+### Add input
+
+Map a new action in `DEFAULT_BINDINGS` (and `PAD_MAP`) in `src/game/core/Input.js`, read it with `input.pressed('action')` / `held` in the game loop, and update the controls table in `README.md` and the pause screen.
+
+## Testing
+
+- Vitest runs in Node (`tests/*.test.js`); there is no browser or WebGL in tests. Test world logic, rules, saves and settings directly; for rendering code, test the work done (uploads, draw ranges, pass selection) with small fakes, as `tests/rendering.test.js` does.
+- `tests/server.test.js` covers the production server and `.env` parsing (names with quotes, Cyrillic and `$`).
+- Every new rule or bug fix gets a test. Interactive behaviour (controls, menus, rendering) must also be checked in a WebGL2 browser: new game, pause/resume, settings, continue and new-game replacement.
+
+## Definition of done
+
+1. `npm run check` passes with **zero** errors and warnings{% if choices.docker == "full" %} — run it as `docker compose run --rm dev npm run check`{% endif %}.
+2. `npm run build` succeeds{% if choices.docker != "none" %} and `docker compose build app` still builds the image when `Dockerfile`, dependencies or runtime files changed{% endif %}.
+3. Changed gameplay was tried in the browser (`npm run dev`) without console errors.
+4. Docs match the code: `.env.example`, `README.md`{% if options.spec_md %}, `SPEC.md`{% endif %} and this file are updated when commands, env keys, controls, structure or rules change.
+
+## Performance invariants
+
+- Keep HUD invalidation in sync: every new visible HUD value must be part of `HudState.changed()`.
+- Empty particle pools stay hidden, and buffer update ranges must cover every active particle after compaction or reuse.
+- Reuse camera and animation scratch storage; never mutate authored animation clips.
+- The mesher merges only opaque, stationary cube faces with identical encoded corner lighting and atlas regions. Preserve unit texture repeats, derivatives, AO gradients and material boundaries; compare against `new Mesher(world, atlas, { mergeFaces: false })` when changing it.
+- Keep chromatic aberration on the separate output/grading passes. Do not lower resolution, effect density, shadow quality or animation cadence as a substitute for removing redundant work.
+
+## Conventions
+
+- ES modules with explicit `.js` extensions in imports; classes in `PascalCase.js`, helpers in `camelCase.js`.
+- Units: world coordinates are blocks (1 unit = 1 block); character models use model pixels (`PX` in `Rig.js`). Angles are radians, colours are hex numbers.
+- Deterministic generation: use `Rng`/`Noise` with the level seed, never `Math.random()` in world generation.
+- All art and audio stay procedural or are added under `public/` with a clear licence; do not copy assets, names or characters from other games.
+- Dependencies: prefer the platform and the existing libraries; add a package only when it clearly pays off and keep `package-lock.json` in sync (`npm ci` installs exactly it).
+- Let Prettier format (`npm run format`); do not disable lint rules to get green.
+- Write code, comments, UI texts and docs in English.
+{% if choices.docker != "none" %}
+## Docker
+
+{% if choices.docker == "full" -%}
+Mode: **everything in Docker**. `docker-compose.yml` has two services:
+
+- `dev` (profile `dev`, stage `dev` of `Dockerfile`): mounts the project at `/app`, keeps `node_modules` in the named volume `node_modules`, runs as user `node`, reads `.env` and publishes `WEB_PORT`; Vite binds to `0.0.0.0` and polls for file changes. `docker compose up dev` runs `npm run dev`; `docker compose run --rm dev npm …` runs any script. After changing dependencies run `docker compose run --rm dev npm ci` (or `npm install <pkg>`).
+- `app`: the production image (see below), `docker compose up --build app`.
+{%- else -%}
+Mode: **Docker to run the app**. Development happens on the host with Node.js (`npm run dev`); Docker builds and serves the production game.
+{%- endif %}
+
+- `Dockerfile` (multi-stage, `node:24-bookworm-slim`): `dev` installs dependencies, `build` runs `vite build` with `APP_NAME`/`APP_SLUG` build arguments, `production` contains only `dist/`, `scripts/` and `package.json` and runs `node scripts/serve.mjs` as user `node` on port 5173 inside the container. `.env` is never copied into the image.
+- `docker-compose.yml` reads `.env`: `COMPOSE_PROJECT_NAME` ({{ project.slug }}) names the stack, `APP_NAME`/`APP_SLUG` are build arguments, and `WEB_PORT` is the published host port. The title is baked in at build time: rebuild (`docker compose up --build app`) after changing it.
+- Saves live in the player's browser, so there is no data volume.
+- Commands: `docker compose up --build app`, `docker compose build app`, `docker compose{% if choices.docker == "full" %} --profile dev{% endif %} logs -f`, `docker compose{% if choices.docker == "full" %} --profile dev{% endif %} down`. `docker compose --profile dev down --volumes --remove-orphans --rmi local` removes the containers, the dependency volume and the local images.
+{% endif %}
+---
+
+Bootstrapped from `{{ skeleton.id }} {{ skeleton.version }}`.

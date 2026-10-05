@@ -1,0 +1,61 @@
+# {{ project.name }}
+
+A browser action-adventure foundation with a blocky, pixel-art voxel world. Three.js renders a procedural meadow, animated block characters, sky, water, shadows and particles. PixiJS draws the gameplay HUD; Vue owns the menu, pause screen and settings. All textures and sound are generated locally. There are no external art requests, accounts or game servers.
+
+{% if choices.docker == "full" %}Everything runs in Docker (see [Docker](#docker)): run the npm commands below inside the dev container. {% else %}Use Node.js 24+ and npm 10+. {% endif %}Copy `.env.example` to `.env` if fastDev has not generated it, then run `npm ci` and `npm run dev`. Open the printed URL. `npm run check` runs ESLint, Prettier and the unit/integration tests. `npm run build` generates `dist/`; `npm start` serves it on `WEB_PORT` using a small Node static server. Browser support: WebGL2, Pointer Lock, Web Audio and ES modules. Hardware acceleration is required; choose Low graphics on slower devices.
+
+## Try the demo
+
+Choose **New adventure**. Collect three glowing crystals, defeat the guardian beside the river, and activate the golden beacon at the end of the path. Use the stone checkpoint near the bridge to heal and save your respawn point. You can continue exploring after completion.
+
+| Keyboard / mouse | Gamepad                 | Action                         |
+| ---------------- | ----------------------- | ------------------------------ |
+| WASD / arrows    | Left stick              | Move                           |
+| Mouse / scroll   | Right stick             | Orbit / zoom (scroll only)     |
+| Space            | A / bottom face         | Jump / swim upward             |
+| Shift            | Left-stick press        | Sprint                         |
+| C / Ctrl         | B / right face          | Crouch                         |
+| F / left click   | X / left face           | Attack / mine                  |
+| G / right click  | Right bumper            | Place oak planks in build mode |
+| E                | Y / top face            | Checkpoint / beacon            |
+| 1 / 2 / 3        | D-pad up / left / right | Sword / mine / build           |
+| P / Esc          | Start                   | Pause                          |
+| R                | Back                    | Return to checkpoint           |
+
+Click the world to capture the pointer. Keyboard F and G also work when a browser cannot capture it. Losing pointer lock or switching tabs pauses the game. Sound starts only after a user gesture. A standard Gamepad API mapping is expected.
+
+Progress and settings live in `localStorage`, scoped by `APP_SLUG` and browser origin. Saves contain checkpoint, objective flags and up to 2048 edited cells. Starting a new game replaces the demo save after confirmation. Private browsing or cleared site data can remove saves. Storage errors show a visible notice. There is no cloud sync. A new level/save format must migrate or change its version and ID.
+
+## Change the game
+
+- `src/content/demo.js`: seed, terrain, route, spawn and objective positions.
+- `src/game/world/`: block registry and procedural atlas, terrain tools, lighting, chunk meshing, renderer.
+- `src/game/actors/`: skinned box rig, pixel skin painter, locomotion/keyframe animation, neutral explorer and training guardian.
+- `src/game/gameplay/`: physics, player, enemy, third-person camera and pure interaction rules.
+- `src/game/Game.js`: lifecycle, objectives, interactions, block edits and one animation loop.
+- `src/game/audio/AudioEngine.js`: synthesized effects and a small generative music phrase.
+- `src/game/hud/Hud.js`: Pixi HUD. `src/App.vue` and `src/style.css`: menus and settings.
+- `tests/`: raycasts, meshes, lighting, physics, generated level, combat rules, saves, environment parsing and production HTTP.
+
+Change content first; keep engine modules reusable. Objective platforms and the spawn are protected from mining. Placement cannot intersect the player. World edges are bounded. The demo has a finite dense world, one enemy, one level and a single block palette in the toolbar; add streaming worlds, inventory, crafting or additional levels as explicit game features. The demo has no story, multiplayer or third-party assets.
+
+The optional native `fsevents` install script is disabled explicitly; Vite uses its portable watcher.
+
+## Rendering performance
+
+The HUD keeps its last canvas image until displayed state or viewport dimensions change. When adding a HUD field, include its pixel-affecting values in `HudState.js`. Particle pools retain their full capacity but upload only the active prefix and hide when empty.
+
+The mesher merges opaque cube faces only when all corner light and ambient-occlusion values are identical. Material boundaries, lighting gradients, animated foliage and liquids retain their individual faces. Merged faces repeat their atlas tile once per block, with explicit texture derivatives to preserve mipmaps and anisotropic filtering. `new Mesher(world, atlas, { mergeFaces: false })` provides a reference mode for diagnostics and comparisons.
+
+Output conversion and color grading share one fullscreen pass during ordinary rendering. Half-float intermediate rounding preserves the original conversion precision; chromatic aberration uses the original separate passes so displaced filtering keeps the same behavior. Bloom, shadows, antialiasing, resolution and simulation timing retain their quality settings. Dispose every pass, including disabled fallback passes, when replacing a renderer.
+{% if choices.docker != "none" %}
+## Docker
+
+{% if choices.docker == "full" -%}
+Everything runs in containers; Node.js is not needed on the host. Install dependencies with `docker compose run --rm dev npm ci`, start the dev server with `docker compose up dev` and open http://localhost:{{ ports.WEB_PORT }}. Run every other npm script in the dev container, e.g. `docker compose run --rm dev npm run check` and `docker compose run --rm dev npm run build`. The `dev` service mounts the project, keeps `node_modules` in a named volume and polls for file changes, so hot reload works. `docker compose up --build app` builds and serves the production game; `docker compose --profile dev down` stops everything.
+{%- else -%}
+Develop on the host with the npm commands above. `docker compose up --build app` builds and serves the production game on http://localhost:{{ ports.WEB_PORT }}; `docker compose build app` only builds the image and `docker compose down` stops it.
+{%- endif %}
+
+Both services run as the non-root `node` user. `APP_NAME` and `APP_SLUG` are build arguments, so the production image must be rebuilt after changing them. Saves remain in the player's browser, so no data volume is needed. `docker compose --profile dev down --volumes --remove-orphans --rmi local` removes this project's containers, dependency volume and local images.
+{% endif %}

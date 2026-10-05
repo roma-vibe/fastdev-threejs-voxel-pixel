@@ -1,0 +1,146 @@
+schema = 1
+id = "threejs-voxel-pixel"
+name = "Three.js Voxel Game, Pixel Style"
+description = "A browser voxel action-adventure starter in a blocky pixel-art style: procedural pixel textures and character skins, an animated third-person character, Three.js rendering, PixiJS HUD and Vue menus. A small original demo covers exploration, combat, block editing, checkpoints and local saves. Use it as the foundation for a voxel game, with quality checks and optional Docker workflows."
+category = "web"
+languages = ["node"]
+tags = ["threejs", "voxel", "pixel-art", "blocky", "game", "pixi", "vue", "javascript", "3d"]
+stack = ["Node.js 24+", "Three.js", "PixiJS 8", "Vue 3", "Vite 8", "JavaScript ESM", "Web Audio", "Vitest 5", "ESLint 10"]
+
+[requirements]
+node = ">=24"
+npm = ">=10"
+
+[env]
+APP_NAME = "{{ project.name }}"
+APP_SLUG = "{{ project.slug }}"
+
+[ports]
+WEB_PORT = 5173
+
+[[set]]
+file = "package.json"
+path = ["name"]
+value = "{{ project.slug }}"
+
+[[set]]
+file = "package-lock.json"
+path = ["name"]
+value = "{{ project.slug }}"
+
+[[set]]
+file = "package-lock.json"
+path = ["packages", "", "name"]
+value = "{{ project.slug }}"
+
+[[setup]]
+label = "Install dependencies"
+run = "npm ci --no-audit --no-fund"
+
+[commands.dev]
+label = "Dev"
+run = "npm run dev"
+long = true
+url = "http://localhost:${WEB_PORT}"
+primary = true
+
+[commands.build]
+label = "Build"
+run = "npm run build"
+
+[commands.start]
+label = "Start"
+run = "npm start"
+long = true
+url = "http://localhost:${WEB_PORT}"
+
+[commands.test]
+label = "Test"
+run = "npm test"
+
+[commands.check]
+label = "Check"
+run = "npm run check"
+
+[commands.lint]
+label = "Lint"
+run = "npm run lint"
+
+[choices.docker]
+label = "Docker"
+description = "How the project uses Docker."
+default = "run"
+
+[choices.docker.options.none]
+label = "No Docker"
+description = "Develop and run locally with Node.js."
+
+[choices.docker.options.run]
+label = "Docker to run the app"
+description = "Develop locally; build and serve the production game in a container."
+files = ["Dockerfile", "docker-compose.yml", ".dockerignore"]
+requirements = { docker = ">=24" }
+env = { COMPOSE_PROJECT_NAME = "{{ project.slug }}" }
+cleanup = "docker compose --profile dev down --volumes --remove-orphans --rmi local"
+commands.docker-up = { label = "Docker up", run = "docker compose up --build app", long = true, url = "http://localhost:${WEB_PORT}" }
+commands.docker-down = { label = "Docker down", run = "docker compose --profile dev down" }
+commands.docker-logs = { label = "Docker logs", run = "docker compose --profile dev logs -f", long = true }
+commands.docker-build = { label = "Docker build", run = "docker compose build app", description = "Builds the production image without starting it." }
+
+[choices.docker.options.full]
+label = "Everything in Docker"
+description = "Dependencies, development, tests and builds run in containers."
+files = ["Dockerfile", "docker-compose.yml", ".dockerignore"]
+requirements = { docker = ">=24" }
+drop_requirements = ["node", "npm"]
+env = { COMPOSE_PROJECT_NAME = "{{ project.slug }}" }
+setup = [{ label = "Install dependencies", run = "docker compose run --rm dev npm ci --no-audit --no-fund" }]
+cleanup = "docker compose --profile dev down --volumes --remove-orphans --rmi local"
+preview = { message = "The game runs in the development container with hot reload. Open the link and choose New adventure. Progress stays in this browser. Stop the preview when you are done." }
+commands.dev = { run = "docker compose up dev" }
+commands.build = { run = "docker compose run --rm dev npm run build" }
+commands.start = { label = "Start (container)", run = "docker compose up --build app" }
+commands.test = { run = "docker compose run --rm dev npm test" }
+commands.check = { run = "docker compose run --rm dev npm run check" }
+commands.lint = { run = "docker compose run --rm dev npm run lint" }
+commands.docker-down = { label = "Docker down", run = "docker compose --profile dev down" }
+commands.docker-logs = { label = "Docker logs", run = "docker compose --profile dev logs -f", long = true }
+commands.docker-build = { label = "Docker build", run = "docker compose build app", description = "Builds the production image without starting it." }
+
+[verify]
+commands = ["check", "build", "docker-build"]
+variants = [{ docker = "full" }, { docker = "none" }]
+
+[preview]
+command = "dev"
+message = "Open the game and choose New adventure. Explore Meadow Crossing, collect three crystals and try mining or building. Progress stays in this browser. Stop the preview when you are done."
+
+[updates]
+ecosystem = "npm"
+
+[translations.ru]
+"Three.js Voxel Game, Pixel Style" = "Воксельная игра на Three.js, пиксельный стиль"
+"A browser voxel action-adventure starter in a blocky pixel-art style: procedural pixel textures and character skins, an animated third-person character, Three.js rendering, PixiJS HUD and Vue menus. A small original demo covers exploration, combat, block editing, checkpoints and local saves. Use it as the foundation for a voxel game, with quality checks and optional Docker workflows." = "Основа браузерной воксельной приключенческой игры в блочном пиксель-арт стиле: процедурные пиксельные текстуры и скины персонажей, анимированный персонаж от третьего лица, рендеринг Three.js, HUD на PixiJS и меню на Vue. Небольшой самостоятельный демоуровень показывает исследование мира, бой, редактирование блоков, чекпоинты и локальные сохранения. Подходит для разработки воксельных игр; включает проверки качества и опциональные режимы Docker."
+"Docker" = "Docker"
+"How the project uses Docker." = "Как проект использует Docker."
+"No Docker" = "Без Docker"
+"Develop and run locally with Node.js." = "Разработка и запуск локально с Node.js."
+"Docker to run the app" = "Docker для запуска"
+"Develop locally; build and serve the production game in a container." = "Разработка локально; сборка и запуск готовой игры в контейнере."
+"Everything in Docker" = "Всё в Docker"
+"Dependencies, development, tests and builds run in containers." = "Зависимости, разработка, тесты и сборка работают в контейнерах."
+"Install dependencies" = "Установка зависимостей"
+"Dev" = "Dev"
+"Build" = "Сборка"
+"Start" = "Старт"
+"Test" = "Тесты"
+"Check" = "Проверка"
+"Lint" = "Линтер"
+"Docker up" = "Docker: запуск"
+"Docker down" = "Docker: остановка"
+"Docker logs" = "Docker: логи"
+"Docker build" = "Docker: сборка"
+"Start (container)" = "Старт (контейнер)"
+"Builds the production image without starting it." = "Собирает продакшен-образ без запуска."
+"Open the game and choose New adventure. Explore Meadow Crossing, collect three crystals and try mining or building. Progress stays in this browser. Stop the preview when you are done." = "Откройте игру и выберите New adventure. Исследуйте Meadow Crossing, соберите три кристалла и попробуйте добычу или строительство. Прогресс хранится в этом браузере. После проверки остановите превью."
+"The game runs in the development container with hot reload. Open the link and choose New adventure. Progress stays in this browser. Stop the preview when you are done." = "Игра запущена в dev-контейнере с горячей перезагрузкой. Откройте ссылку и выберите New adventure. Прогресс хранится в этом браузере. После проверки остановите превью."

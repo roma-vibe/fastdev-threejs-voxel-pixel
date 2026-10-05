@@ -1,0 +1,80 @@
+# {{ project.name }} — Specification
+
+Status: draft · Created {{ project.created_at }}
+
+<!--
+Agents: this is the product specification and the source of truth for what to build.
+Complete it from the initial brief before implementing features: ask the owner about anything
+unclear, replace every guidance comment with real content, delete sections that do not apply,
+and keep the document current as decisions are made.
+-->
+
+## Initial brief
+
+{% if project.brief | trim %}{{ project.brief | trim }}{% else %}_No brief was given. Ask the owner what this game should be and record the answer here._{% endif %}
+
+## Starting point
+
+The project starts as a playable browser voxel action-adventure with a blocky pixel-art look; replace or extend it as the game takes shape.
+
+- **Demo level "Meadow Crossing"** (`src/content/demo.js`, level id `meadow-v1`): a deterministic finite meadow with a river, bridge, small jump route, one training guardian, three crystals, a healing checkpoint and an exit beacon. Collecting all crystals and defeating the guardian unlocks the beacon; exploration and building continue after completion.
+- **Mechanics:** third-person movement with physics (jump, sprint, crouch, swim, climb, step-up), melee combat with reach, facing, cooldown and knockback, mining and placing blocks with lighting and mesh updates; spawn and objective cells are protected and placement cannot overlap the player.
+- **Saves and settings:** checkpoint, objectives and up to 2048 edited cells persist in this browser per `APP_SLUG`; loading restarts at the checkpoint with full health. Graphics quality, volume, look sensitivity, inverted look, field of view and camera shake persist too.
+- **Interface:** keyboard and mouse (pointer lock) and standard gamepads; menus for continue, new game (with confirmation), settings, pause, completion and errors. Losing focus or pointer lock pauses the game; graphics and storage failures are shown.
+- **Presentation:** all textures, skins and sounds are generated procedurally. There is no backend, account, multiplayer or cloud save.
+
+## Goals
+
+<!-- 3–5 outcomes that define success. What experience should a player have, and how will we know the game works? -->
+
+## Players
+
+<!-- Who plays (age, experience, devices), how long a session lasts, keyboard/mouse vs gamepad vs touch. -->
+
+## Scope
+
+### In scope
+
+<!-- Capabilities of the first release: levels, mechanics, progression, menus. -->
+
+### Out of scope
+
+<!-- What is explicitly excluded for now (e.g. multiplayer, streaming worlds, crafting). -->
+
+## Features
+
+<!--
+One subsection per feature: a player story, testable acceptance criteria and edge cases. Example:
+
+### Crystals
+- As a player I collect glowing crystals to unlock the exit beacon.
+- Acceptance: touching a crystal collects it once, heals 2 points and is saved; the beacon activates only with all crystals and the guardian defeated.
+-->
+
+## World and content
+
+<!-- Levels (id, size, seed, layout), block palette, enemies and items, objectives, art direction. A changed level layout needs a new level id. -->
+
+## Saves and data
+
+<!-- What is persisted (localStorage keys voxel.<APP_SLUG>.save.v1 / .settings.v1), limits, migrations when the save format or block ids change. -->
+
+## Controls and UI
+
+<!-- Input bindings per device, HUD contents, screens and their transitions, feedback for errors. -->
+
+## Non-functional requirements
+
+<!-- Target browsers and hardware (WebGL2), frame-rate budget and graphics presets, accessibility (remappable keys, reduced camera shake), audio, privacy, deployment ({% if choices.docker != "none" %}Docker Compose serving the static build{% else %}`npm run build` + `npm start` or any static host{% endif %}). -->
+
+## Open questions
+
+<!-- Decisions that need the owner. Remove an item once it is answered and record the answer in the relevant section. -->
+
+- _None yet._
+
+## Milestones
+
+<!-- Small, playable increments in order. Each one ends with `npm run check` and `npm run build` passing. -->
+
+1. _To be defined._
