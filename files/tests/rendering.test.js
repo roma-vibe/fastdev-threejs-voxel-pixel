@@ -230,7 +230,7 @@ describe('compatible face merging', () => {
           for (const bucket of ['cutout', 'translucent', 'water', 'lava'])
             expect(b[bucket]).toEqual(a[bucket]);
         }
-    world.set(32, 14, 31, BLOCK.glowstone);
+    world.set(32, 14, 31, BLOCK.jack_o_lantern);
     world.flushRelight();
     for (const x of [0, 1]) {
       expect(unitFaces(merged.build(x, 0, 0).opaque)).toEqual(unitFaces(ref.build(x, 0, 0).opaque));

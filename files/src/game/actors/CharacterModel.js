@@ -5,22 +5,8 @@ import { Animator } from './Animator.js';
 export class CharacterModel {
   constructor(enemy = false) {
     const p = new SkinPainter(128, 64, enemy ? 8 : 17);
-    const skin = enemy ? [0x7c9987, 0x6f8b7b, 0x9bac8c] : [0xca956e, 0xb88763, 0xdfac81];
-    p.noisePart('head', skin);
-    p.band('head', 0, 2, enemy ? 0x33433e : 0x44352c);
-    for (const part of ['body', 'armR', 'armL'])
-      p.noisePart(part, enemy ? [0x7e5148, 0x70443e, 0x916259] : [0x32707b, 0x285b66, 0x438894]);
-    for (const part of ['legR', 'legL']) {
-      p.noisePart(part, [0x353b48, 0x454c58]);
-      p.band(part, 9, 12, 0x4e3829);
-    }
-    for (const x of [1, 5]) {
-      p.facePx('head', 'front', x, 4, 0xffffff);
-      p.facePx('head', 'front', x + 1, 4, enemy ? 0xc4754d : 0x233e4c);
-    }
-    p.facePx('head', 'front', 3, 6, 0x744b38);
-    p.facePx('head', 'front', 4, 6, 0x744b38);
-    p.setLidColor(skin[0]);
+    if (enemy) paintGuardian(p);
+    else paintExplorer(p);
     this.rig = buildRig(bipedSpec({ noOuter: true }), p.finish());
     this.root = new THREE.Group();
     this.root.add(this.rig.mesh);
@@ -57,4 +43,48 @@ export class CharacterModel {
     this.weapon.geometry.dispose();
     this.weapon.material.dispose();
   }
+}
+
+/** The player: auburn hair, ochre tunic with a belt, olive trousers and boots. */
+function paintExplorer(p) {
+  const skin = [0xc99169, 0xb98260, 0xd8a47c],
+    hair = [0x7a3420, 0x6a2c1a, 0x8a4228];
+  p.noisePart('head', skin);
+  p.noisePart('head', hair, { faces: ['top'] });
+  p.band('head', 0, 2, hair[0], ['front']);
+  p.band('head', 0, 5, hair[1], ['back', 'left', 'right']);
+  for (const part of ['body', 'armR', 'armL']) p.noisePart(part, [0xb7832f, 0xa77428, 0xc8933a]);
+  p.band('body', 7, 9, 0x3d2b1d);
+  for (const part of ['armR', 'armL']) {
+    p.band(part, 10, 12, skin[0]);
+    p.fillPart(part, skin[0], ['bottom']);
+  }
+  for (const part of ['legR', 'legL']) {
+    p.noisePart(part, [0x4e5a30, 0x5b6838]);
+    p.band(part, 9, 12, 0x2f2620);
+    p.fillPart(part, 0x2f2620, ['bottom']);
+  }
+  for (const x of [1, 2, 5, 6]) {
+    p.facePx('head', 'front', x, 3, hair[1]);
+    p.facePx('head', 'front', x, 4, 0x2b1d14);
+  }
+  p.facePx('head', 'front', 3, 6, 0x9a5e4c);
+  p.facePx('head', 'front', 4, 6, 0x9a5e4c);
+  p.setLidColor(skin[0]);
+}
+
+/** The training guardian: a steel helmet with a dark visor, a rust tabard and steel greaves. */
+function paintGuardian(p) {
+  const steel = [0x8b9198, 0x7b8188, 0x9ba1a8],
+    visor = 0x23272d;
+  p.noisePart('head', steel);
+  p.band('head', 3, 6, visor, ['front']);
+  for (const x of [1, 2, 5, 6]) p.facePx('head', 'front', x, 4, 0xff8a3a, true, 0.9);
+  p.noisePart('body', [0x7e5148, 0x70443e, 0x916259]);
+  for (const part of ['armR', 'armL']) p.noisePart(part, steel);
+  for (const part of ['legR', 'legL']) {
+    p.noisePart(part, [0x50555c, 0x5d636a]);
+    p.band(part, 9, 12, 0x3a3d42);
+  }
+  p.setLidColor(visor);
 }

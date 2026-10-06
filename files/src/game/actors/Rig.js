@@ -310,7 +310,7 @@ export function canvasTex(canvas) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Standard biped (box-character layout on a 128x64 sheet)           */
+/* Biped (box-character layout on a 128x64 sheet)                    */
 /* ------------------------------------------------------------------ */
 export function bipedSpec({
   slim = false,

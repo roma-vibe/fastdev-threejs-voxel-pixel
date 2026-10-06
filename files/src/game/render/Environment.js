@@ -257,7 +257,7 @@ export const ENV_PRESETS = {
     cloudColor: 0x9aa0aa,
     cloudOpacity: 0.95,
   },
-  nether: {
+  inferno: {
     ...base,
     sunElevation: 70,
     sunColor: 0xff6a3a,
@@ -310,7 +310,7 @@ export const ENV_PRESETS = {
     cloudColor: 0x4a3a3a,
     cloudOpacity: 0.9,
   },
-  end: {
+  starfield: {
     ...base,
     sunElevation: 60,
     sunColor: 0xd0b0ff,

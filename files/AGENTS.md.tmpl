@@ -87,7 +87,7 @@ The dev server and `npm start` listen on `WEB_PORT` ({{ ports.WEB_PORT }}): http
 
 ### Change the demo level
 
-Edit `src/content/demo.js`: `createDemo()` builds the world with `Gen` (heightmap, columns, flatten, forest, fill, set, protect, boundary). Positions in `DEMO` drive spawn, checkpoint, exit, enemy and crystals; `gameplay/rules.js` protects cells around them. **Change `DEMO.id`** (e.g. `meadow-v2`) whenever the generated terrain changes, because saves store edits as cell coordinates of that level and are ignored when the id differs. Update `tests/world.test.js` (deterministic spawn, bridge and crystal route).
+Edit `src/content/demo.js`: `createDemo()` builds the world with `Gen` (heightmap, columns, flatten, forest, fill, set, protect, boundary). Positions in `DEMO` drive spawn, checkpoint, exit, enemy and crystals; `gameplay/rules.js` protects cells around them. **Change `DEMO.id`** (e.g. `meadow-v3`) whenever the generated terrain changes, because saves store edits as cell coordinates of that level and are ignored when the id differs. Update `tests/world.test.js` (deterministic spawn, bridge and crystal route).
 
 ### Add a block
 

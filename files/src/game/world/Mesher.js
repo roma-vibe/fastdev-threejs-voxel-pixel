@@ -542,7 +542,7 @@ export class Mesher {
     const jx = (h - 0.5) * 0.3,
       jz = (hash3(wx, wy, wz, 11) - 0.5) * 0.3;
     const tall = 0.85 + hash3(wx, wy, wz, 3) * 0.3;
-    const fire = id === BLOCK.fire || id === BLOCK.soul_fire;
+    const fire = id === BLOCK.fire;
     const height = fire ? 1.1 : Math.min(1, tall);
     const cx = wx + 0.5 + (fire ? 0 : jx),
       cz = wz + 0.5 + (fire ? 0 : jz);
@@ -720,7 +720,7 @@ export class Mesher {
 
   _fence(li, id, wx, wy, wz, bucket) {
     const ids = this.ids;
-    const post = id === BLOCK.stone_wall || id === BLOCK.blackstone_wall ? 4 : 2;
+    const post = id === BLOCK.stone_wall ? 4 : 2;
     const lo = 8 - post,
       hi = 8 + post;
     const wall = post === 4;

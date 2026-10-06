@@ -223,7 +223,6 @@ export class Gen {
       ['iron_ore', 0.006, 40],
       ['gold_ore', 0.002, 25],
       ['diamond_ore', 0.0008, 16],
-      ['lapis_ore', 0.001, 24],
     ],
   ) {
     const { sx, sz } = this.w;
@@ -240,8 +239,7 @@ export class Gen {
             py = y + this.rng.int(-1, 1),
             pz = z + this.rng.int(-1, 1);
           const cur = this.get(px, py, pz);
-          if (cur === B.stone || cur === B.deepslate || cur === B.andesite)
-            this.w.setRaw(px, py, pz, id);
+          if (cur === B.stone || cur === B.andesite) this.w.setRaw(px, py, pz, id);
         }
       }
     }
@@ -551,27 +549,6 @@ export class Gen {
             'charred_log',
           );
         }
-        break;
-      }
-      case 'crimson': {
-        const h = 5 + r.int(0, 4);
-        trunk(h, 'nether_wart');
-        leafSphere(x, y + h, z, 2.5, 'nether_wart', 1.5);
-        for (let k = 0; k < 3; k++)
-          this.set(x + r.int(-2, 2), y + h + r.int(-1, 1), z + r.int(-2, 2), 'shroomlight');
-        break;
-      }
-      case 'chorus': {
-        const h = 4 + r.int(0, 5);
-        for (let i = 0; i < h; i++) this.set(x, y + i, z, 'purpur_block');
-        for (let b = 0; b < 3; b++) {
-          const dx = r.int(-1, 1),
-            dz = r.int(-1, 1);
-          const by = y + r.int(2, h - 1);
-          this.set(x + dx, by, z + dz, 'purpur_block');
-          this.set(x + dx, by + 1, z + dz, 'chorus');
-        }
-        this.set(x, y + h, z, 'chorus');
         break;
       }
       default:

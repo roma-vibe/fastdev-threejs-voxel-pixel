@@ -27,7 +27,7 @@ describe('voxel engine', () => {
   it('lights emissive blocks and removes their light after mining', () => {
     const w = new World(16, 16, 16);
     w.skyEnabled = false;
-    w.setRaw(8, 5, 8, BLOCK.glowstone);
+    w.setRaw(8, 5, 8, BLOCK.jack_o_lantern);
     w.computeLighting();
     expect(w.blockLight(9, 5, 8)).toBeGreaterThan(0);
     w.set(8, 5, 8, BLOCK.air);

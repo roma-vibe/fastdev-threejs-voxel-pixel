@@ -185,7 +185,6 @@ export class Tex {
 /* ------------------------------------------------------------------ */
 export const PAL = {
   stone: [0x5e5e5e, 0x6b6b6b, 0x747474, 0x7d7d7d, 0x868686, 0x8f8f8f],
-  deepslate: [0x2e2e36, 0x36363e, 0x3e3e46, 0x47474f, 0x505058],
   andesite: [0x6f6f6f, 0x7a7a7a, 0x858585, 0x8e8e8e, 0x9a9a9a],
   granite: [0x7a4d3e, 0x8a5a48, 0x996653, 0xa6735f, 0xb58470],
   diorite: [0xa8a8a8, 0xb9b9b9, 0xc8c8c8, 0xd6d6d6, 0xe6e6e6],
@@ -203,16 +202,8 @@ export const PAL = {
   ice: [0x7fa8e8, 0x8cb3ee, 0x99bef2, 0xa6c8f5],
   packedIce: [0x7e9fd6, 0x8aaade, 0x97b6e6, 0xa4c1ec],
   obsidian: [0x0f0b1a, 0x160f25, 0x1f1633, 0x2a1f44, 0x3a2c5c],
-  netherrack: [0x5a1c1c, 0x6a2323, 0x7a2a2a, 0x8a3434, 0x993f3f],
-  netherBrick: [0x241114, 0x2d151a, 0x361a20, 0x411f26],
-  redNetherBrick: [0x3d0406, 0x4a0709, 0x580a0d, 0x670f12],
   basalt: [0x3d3d42, 0x48484e, 0x53535a, 0x5f5f66, 0x6b6b72],
-  blackstone: [0x1f1b21, 0x27222a, 0x2f2932, 0x38313b, 0x423a45],
-  soulsand: [0x3f2e23, 0x4a372a, 0x553f31, 0x604839],
-  endstone: [0xd5d59c, 0xdcdda6, 0xe3e4b0, 0xeaebba],
-  purpur: [0x8f5f8f, 0x9a6a9a, 0xa574a5, 0xb080b0, 0xbb8cbb],
-  prismarine: [0x4d8c80, 0x5a9a8a, 0x63a597, 0x6fb3a4, 0x7fc0b1],
-  darkPrismarine: [0x2b4a3e, 0x335546, 0x3b614f, 0x436c58],
+  darkStone: [0x1f1b21, 0x27222a, 0x2f2932, 0x38313b, 0x423a45],
   terracotta: [0x8a5039, 0x96583f, 0xa06045, 0xa9684c],
   oakLog: [0x3f2f1c, 0x4c3822, 0x5a4329, 0x664c30],
   oakPlank: [0x7a5c33, 0x8a6a3c, 0x9a7646, 0xa6824f, 0xb08c58],
@@ -609,7 +600,7 @@ export const P = {
         else if ((x - y + 16) % 9 === 0) t.set(x, y, pal[1]);
       }
   },
-  obsidian(t, crying = false) {
+  obsidian(t) {
     t.noise(
       PAL.obsidian,
       [
@@ -622,32 +613,6 @@ export const P = {
       const x = t.rng.int(0, 15),
         y = t.rng.int(0, 15);
       for (let i = 0; i < 3; i++) t.set(x + i, y + (i % 2), 0x4a3a78);
-    }
-    if (crying)
-      for (let k = 0; k < 10; k++) {
-        const x = t.rng.int(0, 15),
-          y = t.rng.int(0, 15);
-        t.set(x, y, 0xb05cff).glow(x, y, 230);
-        t.set(x, y + 1, 0x8a2be2).glow(x, y + 1, 180);
-      }
-  },
-  netherrack(t) {
-    t.noise(
-      PAL.netherrack,
-      [
-        [4, 0.4],
-        [16, 0.6],
-      ],
-      0.5,
-    );
-    for (let k = 0; k < 8; k++) {
-      let x = t.rng.int(0, 15),
-        y = t.rng.int(0, 15);
-      for (let i = 0; i < 4; i++) {
-        t.set(x, y, 0x4a1414);
-        x += t.rng.int(-1, 1);
-        y += 1;
-      }
     }
   },
   basaltSide(t) {
@@ -667,24 +632,6 @@ export const P = {
       if (v.d2[i] - v.d1[i] < 0.9) t.set(x, y, PAL.basalt[0]);
     });
   },
-  soulsand(t) {
-    t.noise(
-      PAL.soulsand,
-      [
-        [4, 0.5],
-        [16, 0.5],
-      ],
-      0.4,
-    );
-    for (let k = 0; k < 3; k++) {
-      const x = t.rng.int(1, 11),
-        y = t.rng.int(1, 11);
-      t.set(x, y, 0x2a1d15).set(x + 2, y, 0x2a1d15);
-      t.set(x, y + 2, 0x2a1d15)
-        .set(x + 1, y + 3, 0x2a1d15)
-        .set(x + 2, y + 2, 0x2a1d15);
-    }
-  },
   magma(t) {
     t.noise([0x3a1508, 0x4a1d0b, 0x5c250e], [[4, 1]], 0.3);
     const v = t.voronoi(7);
@@ -696,64 +643,6 @@ export const P = {
         t.set(x, y, c).glow(x, y, e < 0.5 ? 255 : 200);
       }
     });
-  },
-  glowstone(t) {
-    t.noise([0x8a6a2a, 0xa98437, 0xc9a24a], [[8, 1]], 0.3);
-    const v = t.voronoi(8);
-    t.each((x, y) => {
-      const i = y * 16 + x;
-      if (v.d1[i] < 2.2) {
-        const c = v.d1[i] < 1 ? 0xfff2c0 : 0xffd766;
-        t.set(x, y, c).glow(x, y, 255);
-      } else t.glow(x, y, 120);
-    });
-  },
-  shroomlight(t) {
-    t.noise(
-      [0xe0823a, 0xf09a45, 0xffb35a, 0xffcd7a],
-      [
-        [4, 0.5],
-        [8, 0.5],
-      ],
-      0.4,
-    );
-    t.each((x, y) => t.glow(x, y, 230));
-  },
-  seaLantern(t) {
-    t.noise([0x9fc9c0, 0xb7dad2, 0xcfe9e3, 0xe9f7f3], [[4, 1]], 0.3);
-    for (let i = 0; i < 16; i++) {
-      t.set(i, 0, 0x7fb3a8).set(0, i, 0x7fb3a8).set(i, 15, 0x7fb3a8).set(15, i, 0x7fb3a8);
-    }
-    t.rect(5, 5, 6, 6, 0xffffff);
-    t.each((x, y) => t.glow(x, y, 235));
-  },
-  endstone(t) {
-    t.noise(
-      PAL.endstone,
-      [
-        [4, 0.5],
-        [16, 0.5],
-      ],
-      0.35,
-    );
-    for (let k = 0; k < 8; k++) {
-      const x = t.rng.int(0, 15),
-        y = t.rng.int(0, 15);
-      t.set(x, y, 0xbcbc84).set(x + 1, y, 0xf2f3c8);
-    }
-  },
-  purpur(t) {
-    t.noise(PAL.purpur, [[8, 1]], 0.25);
-    for (let i = 0; i < 16; i++) {
-      t.set(i, 0, PAL.purpur[4])
-        .set(0, i, PAL.purpur[4])
-        .set(i, 15, PAL.purpur[0])
-        .set(15, i, PAL.purpur[0]);
-      t.set(i, 7, PAL.purpur[0])
-        .set(7, i, PAL.purpur[0])
-        .set(i, 8, PAL.purpur[4])
-        .set(8, i, PAL.purpur[4]);
-    }
   },
   pillarSide(t, pal) {
     t.noise(pal, [[16, 1]], 0.2);
@@ -874,25 +763,6 @@ export const P = {
       t.set(2, 2, f);
     }
   },
-  target(t) {
-    t.each((x, y) => {
-      const d = Math.hypot(x - 7.5, y - 7.5);
-      const ring = Math.floor(d / 2);
-      t.set(x, y, ring % 2 === 0 ? 0xc93a3a : 0xe8dccb);
-    });
-  },
-  craftingTop(t) {
-    P.planks(t, PAL.oakPlank);
-    for (let i = 0; i < 16; i++)
-      t.set(i, 0, 0x4c3822).set(0, i, 0x4c3822).set(i, 15, 0x4c3822).set(15, i, 0x4c3822);
-    for (let i = 2; i < 14; i++)
-      t.set(i, 5, 0x5a4329).set(i, 10, 0x5a4329).set(5, i, 0x5a4329).set(10, i, 0x5a4329);
-  },
-  craftingSide(t) {
-    P.planks(t, PAL.oakPlank);
-    t.rect(2, 1, 5, 2, 0x6e6e6e).rect(3, 3, 1, 5, 0x5a4329);
-    t.rect(10, 2, 1, 6, 0x5a4329).rect(9, 1, 3, 2, 0x9a9a9a);
-  },
   furnaceFront(t, lit = false) {
     P.cobble(t, PAL.stone);
     t.rect(4, 8, 8, 6, 0x1c1c1c);
@@ -920,14 +790,6 @@ export const P = {
     for (let x = 0; x < 16; x++) {
       t.set(x, 2, 0x3a3a3a).set(x, 13, 0x3a3a3a);
     }
-  },
-  noteBlock(t) {
-    P.planks(t, PAL.darkOakPlank);
-    const g = 0x1c1c1c;
-    for (let i = 0; i < 16; i++) t.set(i, 0, g).set(0, i, g).set(i, 15, g).set(15, i, g);
-    for (let y = 3; y < 11; y++) t.set(10, y, 0x2a2a2a);
-    t.rect(7, 10, 3, 2, 0x2a2a2a);
-    t.rect(10, 3, 2, 1, 0x2a2a2a).rect(11, 4, 2, 1, 0x2a2a2a);
   },
   melonSide(t) {
     t.each((x, y) =>
@@ -972,12 +834,6 @@ export const P = {
       ],
       0.35,
     );
-  },
-  prismarineBricks(t) {
-    P.bricks(t, PAL.prismarine, 0x3b6b60, 8, 8, true);
-  },
-  wart(t) {
-    t.noise([0x5a0404, 0x730606, 0x8a0b0b, 0xa31414], [[8, 1]], 0.5);
   },
 };
 
@@ -1118,11 +974,9 @@ export const PP = {
       for (let x = 5 - (y - 6 > 1 ? 1 : 0); x < 11 + (y - 6 > 1 ? 1 : 0); x++) t.set(x, y, cap);
     if (spots) t.set(6, 7, spots).set(9, 8, spots);
   },
-  fire(t, soul = false) {
+  fire(t) {
     t.fill(0, 0);
-    const cols = soul
-      ? [0x1a6a8a, 0x33c1d6, 0x8af2ff, 0xe0ffff]
-      : [0xa82a08, 0xf06a12, 0xffae2a, 0xfff08a];
+    const cols = [0xa82a08, 0xf06a12, 0xffae2a, 0xfff08a];
     for (let x = 0; x < 16; x++) {
       const h = Math.floor(6 + Math.abs(Math.sin(x * 1.7)) * 8 + t.rng.int(0, 2));
       for (let y = 0; y < h; y++) {
@@ -1161,32 +1015,21 @@ export const PP = {
       }
     }
   },
-  roots(t, pal) {
-    t.fill(0, 0);
-    for (const x0 of [3, 7, 11]) {
-      let x = x0;
-      for (let y = 15; y > t.rng.int(3, 8); y--) {
-        t.set(x, y, pal[t.rng.int(0, pal.length - 1)]);
-        if (t.rng.next() < 0.3) x += t.rng.pick([-1, 1]);
-      }
-    }
-  },
-  torch(t, flame = [0xfff2a0, 0xffc34a, 0xff8a1a], soul = false) {
+  torch(t, f = [0xfff2a0, 0xffc34a, 0xff8a1a]) {
     t.fill(0, 0);
     for (let y = 6; y < 16; y++) {
       t.set(7, y, 0x6a4a22);
       t.set(8, y, 0x4c3418);
     }
-    const f = soul ? [0xe0ffff, 0x8af2ff, 0x33c1d6] : flame;
     t.set(7, 6, f[1]).glow(7, 6, 255);
     t.set(8, 6, f[2]).glow(8, 6, 255);
     t.set(7, 5, f[0]).glow(7, 5, 255);
     t.set(8, 5, f[1]).glow(8, 5, 255);
     t.set(7, 4, f[0]).glow(7, 4, 255);
   },
-  lantern(t, soul = false) {
+  lantern(t) {
     t.fill(0, 0);
-    const g = soul ? 0x8af2ff : 0xffd26a;
+    const g = 0xffd26a;
     t.rect(5, 6, 6, 1, 0x2e2e38).rect(5, 13, 6, 1, 0x2e2e38);
     for (let y = 7; y < 13; y++) {
       t.set(5, y, 0x3a3a46).set(10, y, 0x3a3a46);
@@ -1216,11 +1059,5 @@ export const PP = {
         y = t.rng.int(4, 12);
       t.set(x, y, 0xc2182a).set(x, y - 1, 0xe23a4a);
     }
-  },
-  chorusFlower(t) {
-    t.fill(0, 0);
-    for (let y = 4; y < 16; y++) t.set(7, y, 0x6a4a7a).set(8, y, 0x5a3a6a);
-    t.rect(5, 1, 6, 4, 0xc8a6d8);
-    t.rect(6, 2, 4, 2, 0xe8d6f0);
   },
 };

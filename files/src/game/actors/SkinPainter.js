@@ -1,7 +1,7 @@
 import { Rng } from '../core/Rng.js';
 import { hexToRgb, clamp } from '../core/math.js';
 
-/** Standard 64x64 box-character skin layout (inner + outer layers), plus accessory region x>=64. */
+/** 64x64 box-character skin layout (inner + outer layers), plus an accessory region at x >= 64. */
 export const PARTS = {
   head: { uv: [0, 0], s: [8, 8, 8] },
   hat: { uv: [32, 0], s: [8, 8, 8] },
@@ -68,7 +68,7 @@ export class SkinPainter {
 
   /** Allocate an accessory UV block for a box of size [w,h,d]. Returns [u,v]. */
   alloc(size, name) {
-    // texture regions are whole pixels even when a box is fractional (e.g. an 11.2-wide saddle panel);
+    // texture regions are whole pixels even when a box is fractional (e.g. an 11.2-wide panel);
     // a fractional cursor would shift every later part off the pixel grid and leave it unpainted
     const [w, h, d] = size.map((v) => Math.ceil(v - 1e-6));
     const bw = 2 * d + 2 * w,
@@ -152,7 +152,7 @@ export class SkinPainter {
     );
   }
 
-  /** Rocky plates: voronoi-like cell shading per face (for Rune / Magnorite). */
+  /** Rocky plates: voronoi-like cell shading per face (for stone or armoured characters). */
   rockPart(part, pal, crack, { faces, cells = 3 } = {}) {
     const R = this.rects(part);
     for (const f of faces ?? Object.keys(R)) {

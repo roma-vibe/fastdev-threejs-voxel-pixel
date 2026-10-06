@@ -5,7 +5,7 @@ USER node
 COPY --chown=node:node package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY --chown=node:node . .
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 FROM dev AS build
 ARG APP_NAME="Voxel Game"

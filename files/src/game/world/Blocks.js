@@ -51,9 +51,6 @@ export const TEXTURES = {
   diorite: (t) => P.stone(t, PAL.diorite),
   calcite: (t) => P.stone(t, PAL.calcite),
   tuff: (t) => P.stone(t, PAL.tuff),
-  deepslate: (t) => P.stone(t, PAL.deepslate),
-  deepslate_bricks: (t) => P.stoneBricks(t, PAL.deepslate),
-  cobbled_deepslate: (t) => P.cobble(t, PAL.deepslate, 0x1e1e24),
   dirt: (t) => P.dirt(t),
   coarse_dirt: (t) => (P.dirt(t, PAL.coarse), t.speck(0x777777, 0.08)),
   mud: (t) => P.dirt(t, PAL.mud),
@@ -134,8 +131,6 @@ export const TEXTURES = {
   orange_wool: (t) => P.wool(t, 0xf07613),
   bricks: (t) => P.bricks(t, [0x7a3a2a, 0x8a4434, 0x96503c, 0xa35a44], 0x9a8a7a, 8, 4),
   bookshelf: (t) => P.bookshelf(t),
-  crafting_top: (t) => P.craftingTop(t),
-  crafting_side: (t) => P.craftingSide(t),
   furnace_front: (t) => P.furnaceFront(t, false),
   furnace_lit: (t) => P.furnaceFront(t, true),
   furnace_top: (t) => P.smoothStone(t),
@@ -149,64 +144,30 @@ export const TEXTURES = {
   jack_face: (t) => P.pumpkinSide(t, true),
   pumpkin_top: (t) => (P.pumpkinSide(t), t.rect(6, 6, 4, 4, 0x4a6a1a)),
   melon_side: (t) => P.melonSide(t),
-  target: (t) => P.target(t),
-  note_block: (t) => P.noteBlock(t),
   coal_ore: (t) => P.ore(t, PAL.stone, [0x1a1a1a, 0x2a2a2a, 0x4a4a4a]),
   iron_ore: (t) => P.ore(t, PAL.stone, [0xa07a5a, 0xc8a080, 0xe6c8a8]),
   gold_ore: (t) => P.ore(t, PAL.stone, [0xb08a14, 0xf0c832, 0xfff08a]),
   diamond_ore: (t) => P.ore(t, PAL.stone, [0x1a8a8a, 0x4ae0d6, 0xbafff6]),
-  lapis_ore: (t) => P.ore(t, PAL.stone, [0x1a2a8a, 0x2a4ad0, 0x5a7af0]),
   emerald_ore: (t) => P.ore(t, PAL.stone, [0x0a6a2a, 0x1ac84a, 0x8affaa], 3),
-  redstone_ore: (t) => P.ore(t, PAL.stone, [0x6a0a0a, 0xd01a1a, 0xff6a6a]),
   iron_block: (t) => P.metal(t, [0x9a9a9a, 0xbcbcbc, 0xd6d6d6, 0xe6e6e6, 0xf6f6f6]),
   gold_block: (t) => P.metal(t, [0xb08a14, 0xd6aa22, 0xf0c832, 0xfad84a, 0xfff08a]),
   copper_block: (t) => P.metal(t, [0x8a4a2a, 0xa65a34, 0xc06c40, 0xd07a4a, 0xe08a5a]),
   diamond_block: (t) => P.gemBlock(t, [0x1a8a8a, 0x4ac8c8, 0x62e8e0, 0x9af6f0, 0xd6fffc]),
-  lapis_block: (t) => P.gemBlock(t, [0x14246a, 0x1e3490, 0x2a44b0, 0x3a5ad0, 0x6a8af0]),
   emerald_block: (t) => P.gemBlock(t, [0x0a6a2a, 0x14a040, 0x1ac84a, 0x4ae06a, 0x8affaa]),
-  redstone_block: (t) => P.gemBlock(t, [0x6a0a0a, 0x9a0e0e, 0xc01a1a, 0xe02a2a, 0xff6a6a]),
-  prismarine: (t) =>
-    t.noise(
-      PAL.prismarine,
-      [
-        [4, 0.5],
-        [8, 0.5],
-      ],
-      0.4,
-    ),
-  prismarine_bricks: (t) => P.prismarineBricks(t),
-  dark_prismarine: (t) => P.bricks(t, PAL.darkPrismarine, 0x1e3a30, 8, 8, true),
-  sea_lantern: (t) => P.seaLantern(t),
   rune_bricks: (t) => P.stoneBricks(t, [0x5a6068, 0x6a717a, 0x7a818a, 0x8a929b, 0x9aa2ab]),
   rune_rune_blue: (t) =>
     P.runes(t, [0x5a6068, 0x6a717a, 0x7a818a, 0x8a929b, 0x9aa2ab], 0x55d6ff, 0),
   rune_rune_blue2: (t) =>
     P.runes(t, [0x5a6068, 0x6a717a, 0x7a818a, 0x8a929b, 0x9aa2ab], 0x55d6ff, 2),
-  rune_rune_red: (t) => P.runes(t, PAL.blackstone, 0xff3a2a, 1),
+  rune_rune_red: (t) => P.runes(t, PAL.darkStone, 0xff3a2a, 1),
   rune_rune_yellow: (t) => P.runes(t, PAL.calcite, 0xffd23a, 2),
   rune_rune_green: (t) => P.runes(t, PAL.andesite, 0x4aff7a, 0),
   shadow_bricks: (t) => P.stoneBricks(t, [0x1c181c, 0x241f24, 0x2c262c, 0x352e35, 0x3e363e]),
   obsidian: (t) => P.obsidian(t),
-  crying_obsidian: (t) => P.obsidian(t, true),
   bedrock: (t) => P.bedrock(t),
-  netherrack: (t) => P.netherrack(t),
-  nether_bricks: (t) => P.bricks(t, PAL.netherBrick, 0x120708, 8, 4, false),
-  red_nether_bricks: (t) => P.bricks(t, PAL.redNetherBrick, 0x1e0203, 8, 4, false),
-  nether_wart: (t) => P.wart(t),
   basalt_side: (t) => P.basaltSide(t),
   basalt_top: (t) => P.basaltTop(t),
-  blackstone: (t) => P.stone(t, PAL.blackstone),
-  polished_blackstone_bricks: (t) => P.stoneBricks(t, PAL.blackstone),
-  gilded_blackstone: (t) => P.ore(t, PAL.blackstone, [0xb08a14, 0xf0c832, 0xfff08a], 5),
-  soul_sand: (t) => P.soulsand(t),
-  soul_soil: (t) => P.dirt(t, PAL.soulsand),
   magma: (t) => P.magma(t),
-  glowstone: (t) => P.glowstone(t),
-  shroomlight: (t) => P.shroomlight(t),
-  end_stone: (t) => P.endstone(t),
-  end_stone_bricks: (t) => P.bricks(t, PAL.endstone, 0xb8b884, 8, 4, true),
-  purpur_block: (t) => P.purpur(t),
-  purpur_pillar: (t) => P.pillarSide(t, PAL.purpur),
   quartz: (t) => P.smoothStone(t, [0xd8d2c8, 0xe2ddd4, 0xebe6de, 0xf2eee8, 0xfaf8f4]),
   quartz_pillar: (t) => P.pillarSide(t, [0xd8d2c8, 0xe2ddd4, 0xebe6de, 0xf2eee8]),
   // plants & specials
@@ -230,21 +191,15 @@ export const TEXTURES = {
   moss_block: (t) => (P.dirt(t, [0x4f7a24, 0x5d8a2c, 0x6a9a34, 0x4a6e20]), t.speck(0x7aaa3c, 0.12)),
   red_mushroom: (t) => PP.mushroom(t, 0xc8201a, 0xffffff),
   brown_mushroom: (t) => PP.mushroom(t, 0x9a6a4a, null),
-  fire: (t) => PP.fire(t, false),
-  soul_fire: (t) => PP.fire(t, true),
+  fire: (t) => PP.fire(t),
   cobweb: (t) => PP.cobweb(t),
   vines: (t, env) => PP.vines(t, shadePal(env.jungle, [0.7, 0.85, 1])),
-  crimson_roots: (t) => PP.roots(t, [0x8a1a2a, 0xa82a3a, 0xc83a4a]),
-  warped_roots: (t) => PP.roots(t, [0x14806a, 0x1aa08a, 0x2ac0aa]),
   torch: (t) => PP.torch(t),
-  soul_torch: (t) => PP.torch(t, undefined, true),
   red_torch: (t) => PP.torch(t, [0xffa0a0, 0xff3a2a, 0xa01010]),
   lantern: (t) => PP.lantern(t),
-  soul_lantern: (t) => PP.lantern(t, true),
   ladder: (t) => PP.ladder(t),
   iron_bars: (t) => PP.bars(t),
   berry_bush: (t) => PP.berryBush(t),
-  chorus: (t) => PP.chorusFlower(t),
 };
 
 const B = [];
@@ -330,9 +285,6 @@ def('granite');
 def('diorite');
 def('calcite');
 def('tuff');
-def('deepslate');
-def('deepslate_bricks');
-def('cobbled_deepslate');
 def('dirt', { sound: 'gravel' });
 def('coarse_dirt', { sound: 'gravel' });
 def('mud', { sound: 'gravel' });
@@ -390,10 +342,6 @@ for (const c of [
   def(c + '_wool', { sound: 'wool' });
 def('bricks');
 def('bookshelf', { tex: { top: 'oak_planks', side: 'bookshelf' }, sound: 'wood' });
-def('crafting_table', {
-  tex: { top: 'crafting_top', side: 'crafting_side', bottom: 'oak_planks' },
-  sound: 'wood',
-});
 def('furnace', { tex: { top: 'furnace_top', side: 'cobblestone', front: 'furnace_front' } });
 def('furnace_lit', {
   tex: { top: 'furnace_top', side: 'cobblestone', front: 'furnace_lit' },
@@ -409,16 +357,9 @@ def('jack_o_lantern', {
   sound: 'wood',
 });
 def('melon', { tex: { top: 'pumpkin_top', side: 'melon_side' }, sound: 'wood' });
-def('target', { sound: 'grass' });
-def('note_block', { sound: 'wood' });
-for (const o of ['coal', 'iron', 'gold', 'diamond', 'lapis', 'emerald', 'redstone'])
-  def(o + '_ore');
-for (const o of ['iron', 'gold', 'copper', 'diamond', 'lapis', 'emerald', 'redstone'])
+for (const o of ['coal', 'iron', 'gold', 'diamond', 'emerald']) def(o + '_ore');
+for (const o of ['iron', 'gold', 'copper', 'diamond', 'emerald'])
   def(o + '_block', { sound: 'metal' });
-def('prismarine');
-def('prismarine_bricks');
-def('dark_prismarine');
-def('sea_lantern', { light: 15, lightColor: 0xc0f0ff, sound: 'glass' });
 def('rune_bricks');
 def('rune_rune_blue', { light: 9, lightColor: 0x55d6ff });
 def('rune_rune_blue2', { light: 9, lightColor: 0x55d6ff });
@@ -427,25 +368,9 @@ def('rune_rune_yellow', { light: 9, lightColor: 0xffd23a });
 def('rune_rune_green', { light: 9, lightColor: 0x4aff7a });
 def('shadow_bricks');
 def('obsidian');
-def('crying_obsidian', { light: 10, lightColor: 0xa050ff });
 def('bedrock');
-def('netherrack');
-def('nether_bricks');
-def('red_nether_bricks');
-def('nether_wart', { tex: 'nether_wart', sound: 'wool' });
 def('basalt', { tex: { top: 'basalt_top', side: 'basalt_side' } });
-def('blackstone');
-def('polished_blackstone_bricks');
-def('gilded_blackstone');
-def('soul_sand', { sound: 'sand' });
-def('soul_soil', { sound: 'sand' });
 def('magma', { light: 6, lightColor: 0xff6a1a, damage: 1 });
-def('glowstone', { light: 15, lightColor: 0xffd98a, sound: 'glass' });
-def('shroomlight', { light: 15, lightColor: 0xffb060, sound: 'wool' });
-def('end_stone');
-def('end_stone_bricks');
-def('purpur_block');
-def('purpur_pillar', { tex: { top: 'purpur_block', side: 'purpur_pillar' } });
 def('quartz');
 def('quartz_pillar', { tex: { top: 'quartz', side: 'quartz_pillar' } });
 def('water', {
@@ -499,13 +424,9 @@ plant('sugar_cane', { wind: 0.4 });
 plant('red_mushroom', { wind: 0 });
 plant('brown_mushroom', { wind: 0 });
 plant('fire', { light: 15, lightColor: 0xff9a3a, damage: 2, wind: 0, sound: 'fire' });
-plant('soul_fire', { light: 12, lightColor: 0x5ae0ff, damage: 2, wind: 0, sound: 'fire' });
 plant('cobweb', { wind: 0, sound: 'wool' });
 plant('hanging_vines', { tex: 'vines', climb: true, wind: 0.6 });
-plant('crimson_roots', { wind: 0.3 });
-plant('warped_roots', { wind: 0.3 });
 plant('berry_bush');
-plant('chorus', { wind: 0.2, light: 6, lightColor: 0xd0a0ff });
 def('torch', {
   shape: SHAPE.TORCH,
   bucket: 'cutout',
@@ -514,16 +435,6 @@ def('torch', {
   filter: 0,
   light: 14,
   lightColor: 0xffb060,
-  sound: 'wood',
-});
-def('soul_torch', {
-  shape: SHAPE.TORCH,
-  bucket: 'cutout',
-  solid: false,
-  opaque: false,
-  filter: 0,
-  light: 11,
-  lightColor: 0x5ae0ff,
   sound: 'wood',
 });
 def('red_torch', {
@@ -544,16 +455,6 @@ def('lantern', {
   filter: 0,
   light: 15,
   lightColor: 0xffc070,
-  sound: 'metal',
-});
-def('soul_lantern', {
-  shape: SHAPE.LANTERN,
-  bucket: 'cutout',
-  solid: false,
-  opaque: false,
-  filter: 0,
-  light: 12,
-  lightColor: 0x5ae0ff,
   sound: 'metal',
 });
 def('ladder', {
@@ -591,9 +492,7 @@ for (const w of ['oak', 'spruce', 'dark_oak', 'birch', 'jungle', 'acacia'])
     tex: w + '_planks',
     sound: 'wood',
   });
-def('nether_brick_fence', { shape: SHAPE.FENCE, opaque: false, filter: 0, tex: 'nether_bricks' });
 def('stone_wall', { shape: SHAPE.FENCE, opaque: false, filter: 0, tex: 'cobblestone' });
-def('blackstone_wall', { shape: SHAPE.FENCE, opaque: false, filter: 0, tex: 'blackstone' });
 const slab = (n, tex, o = {}) => def(n, { shape: SHAPE.SLAB, opaque: false, filter: 0, tex, ...o });
 slab('stone_slab', 'smooth_stone');
 slab('cobblestone_slab', 'cobblestone');
@@ -605,13 +504,7 @@ slab('birch_slab', 'birch_planks', { sound: 'wood' });
 slab('jungle_slab', 'jungle_planks', { sound: 'wood' });
 slab('acacia_slab', 'acacia_planks', { sound: 'wood' });
 slab('sandstone_slab', { top: 'sandstone_top', side: 'sandstone_side' });
-slab('blackstone_slab', 'polished_blackstone_bricks');
-slab('nether_brick_slab', 'nether_bricks');
-slab('purpur_slab', 'purpur_block');
-slab('end_brick_slab', 'end_stone_bricks');
-slab('prismarine_slab', 'prismarine_bricks');
 slab('rune_slab', 'rune_bricks');
-slab('deepslate_slab', 'deepslate_bricks');
 slab('quartz_slab', 'quartz');
 def('oak_topslab', {
   shape: SHAPE.TOPSLAB,

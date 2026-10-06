@@ -1,7 +1,7 @@
 import { World } from '../game/world/World.js';
 import { Gen } from '../game/world/Gen.js';
 export const DEMO = {
-  id: 'meadow-v1',
+  id: 'meadow-v2',
   seed: 14382,
   size: [96, 48, 96],
   spawn: [40.5, 13.05, 29.5],
